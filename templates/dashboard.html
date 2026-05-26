@@ -417,7 +417,6 @@
       <div class="source-row"><span class="k">Postings</span><span class="v" id="src-postings">—</span></div>
       <div class="source-row"><span class="k">With salary</span><span class="v" id="src-salary">—</span></div>
       <div class="progressline"><i></i></div>
-      <div class="source-row"><span class="k">Mode</span><span class="v" id="src-mode">—</span></div>
     </div>
   </section>
 
@@ -486,17 +485,6 @@
   <section>
     <div class="section-head" style="padding-top:44px">
       <span class="num">04</span>
-      <h2>Most-requested skills — by department</h2>
-      <span class="meta">functional &amp; soft skills · top 6 per column</span>
-    </div>
-    <div class="tech-scroll">
-      <div class="tech-grid" id="skills-grid"></div>
-    </div>
-  </section>
-
-  <section>
-    <div class="section-head" style="padding-top:44px">
-      <span class="num">05</span>
       <h2>Tech ROI</h2>
       <span class="meta">average mid-range salary of postings mentioning it · top 12</span>
     </div>
@@ -506,7 +494,7 @@
   <section class="grid" style="grid-template-columns:1fr">
     <div>
       <div class="section-head" style="padding-top:44px">
-        <span class="num">06</span>
+        <span class="num">05</span>
         <h2>Salary ranges by department</h2>
         <span class="meta">USD · annual base · min–max band · ● mid-range median</span>
       </div>
@@ -519,7 +507,7 @@
 
   <section>
     <div class="section-head" style="padding-top:8px">
-      <span class="num">07</span>
+      <span class="num">06</span>
       <h2>Detected postings</h2>
       <span class="meta" id="jobs-meta">—</span>
     </div>
@@ -578,7 +566,6 @@
   $('#src-snapshot').textContent = DATA.meta.snapshot_iso;
   $('#src-postings').textContent = DATA.meta.total_jobs + ' · ' + DATA.meta.total_pool + ' total pool';
   $('#src-salary').textContent = DATA.meta.with_salary + ' / ' + DATA.meta.total_jobs;
-  $('#src-mode').textContent = DATA.meta.extraction_mode;
   $('#footer-date').textContent = DATA.meta.snapshot_iso;
   $('#footer-run').textContent = 'run #' + DATA.meta.run_id;
 
@@ -592,8 +579,7 @@
   $('#kpi-salary-sub').innerHTML = 'avg ' + fmtK(DATA.meta.salary_avg) + ' · '
     + fmtK(DATA.meta.salary_min) + '–' + fmtK(DATA.meta.salary_max);
   $('#kpi-techs').textContent = DATA.meta.unique_techs;
-  $('#kpi-techs-sub').textContent = (DATA.meta.unique_skills || 0) + ' unique skills · '
-    + DATA.meta.unique_techs + ' technologies';
+  $('#kpi-techs-sub').textContent = DATA.meta.unique_techs + ' technologies detected';
 
   // --- Departments ---
   (function(){
@@ -663,7 +649,6 @@
     }).join('');
   }
   renderColumnar('tech-grid',   DATA.tech_by_dept);
-  renderColumnar('skills-grid', DATA.skills_by_dept || []);
 
   // --- ROI per tech ---
   (function(){

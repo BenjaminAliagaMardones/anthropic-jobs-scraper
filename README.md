@@ -1,6 +1,6 @@
-# Anthropic Jobs Scraper & Analyzer
+# Anthropic Engineering Jobs Dashboard
 
-Scrapea ofertas de Engineering desde la API pública de Greenhouse de Anthropic, extrae tecnologías con Gemini (Google AI) y genera estadísticas + gráficos.
+Scraper en Python que extrae las ofertas de Engineering de Anthropic desde la API pública de Greenhouse, normaliza los datos (departamento, seniority, salario USD, ubicación, stack técnico vía regex curado) y los inyecta en un dashboard HTML estático auto-contenido.
 
 ## Setup
 
@@ -8,22 +8,17 @@ Scrapea ofertas de Engineering desde la API pública de Greenhouse de Anthropic,
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env
-# Edita .env y pega tu GEMINI_API_KEY (https://aistudio.google.com/apikey)
 ```
 
 ## Uso
 
 ```bash
-python main.py            # pipeline completo
-python main.py --no-llm   # solo regex (sin Gemini)
-python main.py --reuse    # usa data/jobs_raw.json si existe (no re-scrapea)
+python main.py
 ```
 
 ## Salidas
 
-- `data/jobs_raw.json` — datos crudos
+- `data/jobs_raw.json` — datos crudos normalizados
 - `data/jobs.csv` — tabla normalizada
-- `output/*.png` — gráficos estáticos
-- `output/locations_map.html` — mapa interactivo
+- `output/dashboard.html` — dashboard interactivo con los datos inyectados
 - Resumen en consola

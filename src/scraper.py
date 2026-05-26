@@ -11,6 +11,53 @@ from bs4 import BeautifulSoup
 
 GREENHOUSE_URL = "https://boards-api.greenhouse.io/v1/boards/anthropic/jobs?content=true"
 
+# Curated tech dictionary used to detect stack mentions in job descriptions.
+TECH_DICTIONARY = [
+    # Languages
+    "Python", "TypeScript", "JavaScript", "Go", "Rust", "C++", "C#", "Java",
+    "Kotlin", "Swift", "Ruby", "Scala", "Haskell", "OCaml", "Bash", "SQL",
+    # ML / AI
+    "PyTorch", "TensorFlow", "JAX", "Flax", "Triton", "CUDA", "XLA", "ONNX",
+    "Hugging Face", "LangChain", "vLLM", "DeepSpeed",
+    "Megatron", "Ray", "MLflow", "Weights & Biases", "Pandas", "NumPy",
+    "SciPy", "scikit-learn", "Polars",
+    # Web / Frontend
+    "React", "Next.js", "Vue", "Svelte", "Angular", "Node.js", "Express",
+    "FastAPI", "Flask", "Django", "GraphQL", "REST", "gRPC", "Tailwind",
+    # Data / Infra
+    "Kubernetes", "Docker", "Terraform", "Pulumi", "Helm", "Ansible",
+    "Kafka", "Spark", "Airflow", "dbt", "Snowflake", "BigQuery", "Redshift",
+    "Postgres", "PostgreSQL", "MySQL", "Redis", "MongoDB", "Elasticsearch",
+    "ClickHouse", "DuckDB",
+    # Cloud
+    "AWS", "GCP", "Azure", "Cloudflare", "Vercel", "Datadog", "Grafana",
+    "Prometheus", "OpenTelemetry",
+    # Hardware / Systems
+    "GPU", "TPU", "InfiniBand", "NCCL", "RDMA", "Linux",
+    # Security
+    "OAuth", "SAML", "Zero Trust", "SOC 2", "ISO 27001",
+    # Tools
+    "Git", "GitHub", "GitLab", "Jira", "Linear",
+]
+
+_TECH_PATTERN = re.compile(
+    r"(?<![A-Za-z0-9_])(" + "|".join(re.escape(t) for t in TECH_DICTIONARY) + r")(?![A-Za-z0-9_])",
+    re.IGNORECASE,
+)
+_TECH_CANONICAL = {t.lower(): t for t in TECH_DICTIONARY}
+
+
+def extract_technologies(text: str) -> list[str]:
+    found = set()
+    for m in _TECH_PATTERN.finditer(text or ""):
+        key = m.group(1).lower()
+        if key in _TECH_CANONICAL:
+            found.add(_TECH_CANONICAL[key])
+    if "PostgreSQL" in found:
+        found.discard("PostgreSQL")
+        found.add("Postgres")
+    return sorted(found)
+
 ENGINEERING_DEPARTMENTS = {
     "AI Research & Engineering",
     "Applied AI",
@@ -108,6 +155,7 @@ def normalize_job(job: dict) -> dict:
         "updated_at": job.get("updated_at"),
         "first_published": job.get("first_published"),
         "description": text,
+        "technologies": extract_technologies(text),
     }
 
 

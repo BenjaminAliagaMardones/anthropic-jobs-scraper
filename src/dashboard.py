@@ -2,8 +2,6 @@
 from __future__ import annotations
 
 import json
-import os
-import re
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -62,13 +60,6 @@ def _top_techs_for_jobs(jobs: list[dict], n: int = 6) -> list[dict]:
     for j in jobs:
         c.update(j.get("technologies", []))
     return [{"name": t, "count": k} for t, k in c.most_common(n)]
-
-
-def _top_skills_for_jobs(jobs: list[dict], n: int = 6) -> list[dict]:
-    c: Counter[str] = Counter()
-    for j in jobs:
-        c.update(j.get("skills", []))
-    return [{"name": s, "count": k} for s, k in c.most_common(n)]
 
 
 def _roi_by_tech(jobs: list[dict], min_n: int = 4, top_n: int = 12) -> list[dict]:
@@ -141,7 +132,7 @@ def _job_payload(j: dict) -> dict:
     }
 
 
-def build_payload(jobs: list[dict], total_pool: int, extraction_mode: str) -> dict:
+def build_payload(jobs: list[dict], total_pool: int) -> dict:
     now = datetime.now(timezone.utc)
 
     # Departments — sorted by count desc, with localized short labels.
@@ -156,24 +147,17 @@ def build_payload(jobs: list[dict], total_pool: int, extraction_mode: str) -> di
     for j in jobs:
         by_dept[j["primary_department"]].append(j)
     tech_by_dept = []
-    skills_by_dept = []
     for d in depts:
         tech_by_dept.append({
             "dept": d["short"],
             "subtitle": f"{d['count']} postings",
             "items": _top_techs_for_jobs(by_dept[d["name"]], n=6),
         })
-        skills_by_dept.append({
-            "dept": d["short"],
-            "subtitle": f"{d['count']} postings",
-            "items": _top_skills_for_jobs(by_dept[d["name"]], n=6),
-        })
 
     # Salary stats.
     sal_jobs = [j for j in jobs if j.get("salary_mid_usd")]
     salary_mids = [j["salary_mid_usd"] for j in sal_jobs]
     unique_techs = len({t for j in jobs for t in j.get("technologies", [])})
-    unique_skills = len({s for j in jobs for s in j.get("skills", [])})
 
     return {
         "meta": {
@@ -188,13 +172,10 @@ def build_payload(jobs: list[dict], total_pool: int, extraction_mode: str) -> di
             "salary_min":     min(j["salary_min_usd"] for j in sal_jobs) if sal_jobs else None,
             "salary_max":     max(j["salary_max_usd"] for j in sal_jobs) if sal_jobs else None,
             "unique_techs":   unique_techs,
-            "unique_skills":  unique_skills,
-            "extraction_mode": extraction_mode,
         },
         "depts":           depts,
         "seniority":       _seniority_series(jobs),
         "tech_by_dept":    tech_by_dept,
-        "skills_by_dept":  skills_by_dept,
         "roi":             _roi_by_tech(jobs),
         "salary_by_dept":  _salary_by_dept(jobs),
         "jobs":            [_job_payload(j) for j in jobs],
@@ -202,8 +183,8 @@ def build_payload(jobs: list[dict], total_pool: int, extraction_mode: str) -> di
 
 
 def render(jobs: list[dict], total_pool: int, template_path: Path,
-           output_path: Path, extraction_mode: str) -> None:
-    payload = build_payload(jobs, total_pool, extraction_mode)
+           output_path: Path) -> None:
+    payload = build_payload(jobs, total_pool)
     template = template_path.read_text()
     data_json = json.dumps(payload, ensure_ascii=False)
     # Escape </script> inside JSON to keep the inline script safe.
