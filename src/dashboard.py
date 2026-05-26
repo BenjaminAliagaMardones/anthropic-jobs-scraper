@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -193,4 +194,9 @@ def render(jobs: list[dict], total_pool: int, template_path: Path,
     html = html.replace("__SNAPSHOT_DATE__", payload["meta"]["snapshot_date"])
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(html)
+
+    js_src = template_path.with_name("dashboard.js")
+    if js_src.exists():
+        shutil.copyfile(js_src, output_path.with_name("dashboard.js"))
+
     print(f"  Dashboard -> {output_path}")
